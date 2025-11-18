@@ -3,88 +3,99 @@
 
 struct Node {
     int data;
-    struct Node* next;
+    struct Node *next;
 };
-struct Node* newNode(int data) {
-    struct Node* n = (struct Node*)malloc(sizeof(struct Node));
-    n->data = data;
+
+struct Node* newnode(int value);
+struct Node* sort(struct Node *head);
+void split(struct Node *head, struct Node **f1, struct Node **s1);
+struct Node* merge(struct Node *a, struct Node *b);
+struct Node* reverse(struct Node *head);
+struct Node* concat(struct Node *l1, struct Node *l2);
+void display(struct Node *head);
+
+struct Node *newnode(int value) {
+    struct Node *n = (struct Node*)malloc(sizeof(struct Node));
+    n->data = value;
     n->next = NULL;
     return n;
 }
 
-struct Node* mergeSort(struct Node* head);
-void splitList(struct Node* head, struct Node** first, struct Node** second);
-struct Node* merge(struct Node* a, struct Node* b);
-
-struct Node* mergeSort(struct Node* head) {
+struct Node *sort(struct Node *head) {
     if (!head || !head->next)
-        return head;  // base case
+        return head;
 
-    struct Node *first, *second;
+    struct Node *f1, *s1;
+    split(head, &f1, &s1);
 
-    splitList(head, &first, &second);
+    f1 = sort(f1);
+    s1 = sort(s1);
 
-    first = mergeSort(first);
-    second = mergeSort(second);
-
-    return merge(first, second);
+    return merge(f1, s1);
 }
-void splitList(struct Node* head, struct Node** first, struct Node** second) {
-    struct Node *slow = head, *fast = head->next;
 
-    while (fast) {
-        fast = fast->next;
-        if (fast) {
-            slow = slow->next;
-            fast = fast->next;
+void split(struct Node *head, struct Node **f1, struct Node **s1) {
+    struct Node *p1 = head;
+    struct Node *p2 = head->next;
+
+    while (p2) {
+        p2 = p2->next;
+        if (p2) {
+            p1 = p1->next;
+            p2 = p2->next;
         }
     }
 
-    *first = head;
-    *second = slow->next;
-    slow->next = NULL;
+    *f1 = head;
+    *s1 = p1->next;
+    p1->next = NULL;
 }
-struct Node* merge(struct Node* a, struct Node* b) {
+
+struct Node *merge(struct Node *a, struct Node *b) {
     if (!a) return b;
     if (!b) return a;
 
-    struct Node* result = NULL;
-
     if (a->data <= b->data) {
-        result = a;
-        result->next = merge(a->next, b);
+        a->next = merge(a->next, b);
+        return a;
     } else {
-        result = b;
-        result->next = merge(a, b->next);
+        b->next = merge(a, b->next);
+        return b;
     }
-    return result;
 }
 
-struct Node* reverseList(struct Node* head) {
-    struct Node *prev = NULL, *nextNode = NULL;
+struct Node *reverse(struct Node *head) {
+    struct Node *prev = NULL;
+    struct Node *nextnode;
 
-    while (head != NULL) {
-        nextNode = head->next;
+    while (head) {
+        nextnode = head->next;
         head->next = prev;
         prev = head;
-        head = nextNode;
+        head = nextnode;
     }
+
     return prev;
 }
 
-struct Node* concatenate(struct Node* list1, struct Node* list2) {
-    if (!list1) return list2;
-    if (!list2) return list1;
+struct Node *concat(struct Node *l1, struct Node *l2) {
+    if (!l1) return l2;
+    if (!l2) return l1;
 
-    struct Node* temp = list1;
-    while (temp->next != NULL)
+    struct Node *temp = l1;
+    while (temp->next) {
         temp = temp->next;
+    }
+    temp->next = l2;
 
-    temp->next = list2;
-    return list1;
+    return l1;
 }
 
-void printList(struct Node* head) {
+void display(struct Node *head) {
+    if (!head) {
+        printf("List is empty\n");
+        return;
+    }
     while (head) {
         printf("%d ", head->data);
         head = head->next;
@@ -93,36 +104,35 @@ void printList(struct Node* head) {
 }
 
 int main() {
-    struct Node* head = NULL;
-
-    int arr[] = {4,1,7,3,9,2};
+    struct Node *head = NULL;
+    int arr[] = {4, 1, 7, 3, 9, 2};
     for (int i = 5; i >= 0; i--) {
-        struct Node* n = newNode(arr[i]);
+        struct Node *n = newnode(arr[i]);
         n->next = head;
         head = n;
     }
 
-    printf("Original List:\n");
-    printList(head);
+    printf("List: ");
+    display(head);
 
-    head = mergeSort(head);
-    printf("Sorted List:\n");
-    printList(head);
+    head = sort(head);
+    printf("Sorted: ");
+    display(head);
 
-    head = reverseList(head);
-    printf("Reversed List:\n");
-    printList(head);
+    head = reverse(head);
+    printf("Reversed: ");
+    display(head);
 
-    struct Node* list2 = NULL;
-    list2 = newNode(100);
-    list2->next = newNode(200);
+    struct Node *list2 = NULL;
+    list2 = newnode(100);
+    list2->next = newnode(200);
 
-    printf("Second List:\n");
-    printList(list2);
+    printf("Second list: ");
+    display(list2);
 
-    head = concatenate(head, list2);
-    printf("After Concatenation:\n");
-    printList(head);
+    head = concat(head, list2);
+    printf("After concatenation: ");
+    display(head);
 
     return 0;
 }
